@@ -1,0 +1,55 @@
+<html>
+<head>
+<title>Local Storage test</title>
+<script>
+
+function store() {
+	if (typeof(localStorage) == "undefined") {
+	alert("Browser does not recognize HTML local storage.");
+	
+}
+else {
+ try {
+	 olddate = new Date();
+	localStorage.setItem("lastdate",olddate);
+	alert("Stored: "+olddate);
+ }
+ catch(e) {
+	 alert("Error with use of local storage: "+e);}
+}
+return false;
+	
+	
+}
+ function remove() {
+	if (typeof(localStorage) == "undefined") {
+	alert("Browser does not recognize HTML local storage.");
+}
+else { 
+	 localStorage.removeItem('lastdate');
+	 alert("Removed date stored.");
+	 }
+	 return false;
+ }
+ function fetch() {
+	if (typeof(localStorage) == "undefined") {
+	alert("Browser does not recognize HTML local storage.");
+}
+else { 
+	 	 alert("Stored "+localStorage.getItem('lastdate'));
+	 }
+	 return false;
+ } 
+	 
+	 
+
+</script>
+</head>
+
+<body>
+<button onClick="javascript:store();">Store date info </button>
+<button onClick="javascript:fetch();">Retrieve date info </button>
+<button onClick="javascript:remove();">
+Remove date info </button>
+</body>
+</html>

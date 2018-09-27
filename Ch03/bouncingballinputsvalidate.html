@@ -1,0 +1,89 @@
+<html>
+<head>
+    <title>Bouncing Ball with inputs</title>
+    <style>
+	form {
+	width:330px;
+	margin:20px;
+	background-color:brown;
+	padding:20px;
+}
+input:valid {background:green;}
+input:invalid {background:red;}
+	</style>
+    <script type="text/javascript">
+	var cwidth = 400;
+	var cheight = 300;
+	var ballrad = 10;
+	var boxx = 20;
+	var boxy = 30;
+	var boxwidth = 350;
+	var boxheight = 250;
+	var boxboundx = boxwidth+boxx-ballrad;
+	var boxboundy = boxheight+boxy-ballrad;
+	var inboxboundx = boxx+ballrad;
+	var inboxboundy = boxy+ballrad;
+	var ballx = 50;
+	var bally = 60;
+	var ctx;
+	var ballvx = 4;
+	var ballvy = 8;
+	
+function init(){  
+ctx = document.getElementById('canvas').getContext('2d');  
+  ctx.lineWidth = ballrad;
+  moveball();  
+  setInterval(moveball,100);  
+}  
+function moveball(){  
+   ctx.clearRect(boxx,boxy,boxwidth,boxheight);
+   moveandcheck();
+  ctx.beginPath();
+  ctx.fillStyle ="rgb(200,0,50)";
+  ctx.arc(ballx, bally, ballrad,0,Math.PI*2,true);
+  ctx.fill();
+   ctx.strokeRect(boxx,boxy,boxwidth,boxheight);
+} 
+function moveandcheck() {
+	var nballx = ballx + ballvx;
+	var nbally = bally +ballvy;
+ 
+  if (nballx > boxboundx) {
+	 ballvx =-ballvx;
+	 nballx = boxboundx;
+  }
+  if (nballx < inboxboundx) {
+     nballx = inboxboundx;
+	 ballvx = -ballvx;
+  }
+  if (nbally > boxboundy) {
+	 nbally = boxboundy;
+	 ballvy =-ballvy;
+  }
+  if (nbally < inboxboundy) {
+    nbally = inboxboundy;
+	 ballvy = -ballvy;
+  }
+  ballx = nballx;
+  bally = nbally;
+}
+function change() {
+	ballvx = Number(document.f.hv.value);
+	ballvy = Number(document.f.vv.value);
+	return false;
+}
+</script>
+</head>
+<body onLoad="init();">  
+<canvas id="canvas" width="400" height="300">
+Your browser doesn't support the HTML5 element canvas.
+</canvas>  
+<br/>
+<form name="f" id="f" onSubmit="return change();">
+  Horizontal velocity <input name="hv" id="hv" value="4" type="number" min="-10" max="10" /> 
+<br>
+  Vertical velocity <input name="vv" id="vv" value="8" type="number" min="-10" max="10"/>
+<input type="submit" value="CHANGE"/>
+</form> 
+</body>
+</html>

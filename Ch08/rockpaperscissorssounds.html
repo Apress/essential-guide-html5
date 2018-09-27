@@ -1,0 +1,175 @@
+<html>
+<head>
+    <title>Rock Paper Scissors</title>
+    <style>
+    form {
+        color: blue;
+        font-family: Georgia, "Times New Roman", Times, serif;
+        font-size:16px;
+        }
+    input { 
+		text-align:right;
+		font:inherit;
+		color:inherit;
+	}
+    
+    </style>
+    <script type="text/javascript">
+	var cwidth = 600;
+	var cheight = 400;
+	var ctx;
+	var everything = [];
+    var rockbx = 50;
+	var rockby = 300;
+	var paperbx = 150;
+	var paperby = 300;
+	var scissorsbx = 250;
+	var scissorsby = 300;
+	var canvas1;
+	var newscore;
+	var size = 15;
+	var result;
+	var choices = ["rock.jpg","paper.gif","scissors.jpg"];
+	var compimg = new Image();
+	var beats = [
+		  ["TIE: you both threw rock.","You win: paper covers rock.","You lose: rock crushes scissors."],
+		  ["You lose: paper covers rock.","TIE: you both threw paper.","You win: scissors cuts paper."],
+		  ["You win: rock crushes scissors.","You lose: scissors cuts paper.","TIE: you both threw scissors"]];
+	var points = [
+		  [0,1,-1],
+		  [-1,0,1],
+		  [1,-1,0]];
+	var music = [
+		  [3,1,0],
+		  [1,3,2],
+		  [0,2,3]];
+	var musicelements;
+	var musicch;
+	var inmotion = false;  //to prevent move by player when computer move is in process
+	
+	
+function Throw(sx,sy, smargin,swidth,sheight,rectcolor,picture) {
+  this.sx = sx;
+  this.sy = sy;
+  this.swidth = swidth;
+  this.bwidth = swidth + 2*smargin;
+  this.bheight = sheight + 2*smargin;
+  this.sheight = sheight;
+  this.fillstyle = rectcolor;
+  this.draw = drawThrow;
+  var imga = new Image();
+  imga.src = picture;
+  this.img = imga;
+  this.smargin = smargin;
+  
+}
+
+function drawThrow() {
+	ctx.strokeStyle = "rgb(0,0,0)";
+	ctx.strokeRect(this.sx,this.sy,this.bwidth,this.bheight);
+	ctx.fillStyle = this.fillstyle;
+	ctx.fillRect(this.sx,this.sy,this.bwidth,this.bheight);
+	ctx.drawImage(this.img,this.sx+this.smargin,this.sy+this.smargin,this.swidth,this.sheight);
+}
+
+function choose(ev) {
+  if (!inmotion) {
+	var compch = Math.floor(Math.random()*3);
+	var compchn = choices[compch];
+	compimg.src = compchn;
+	var mx;
+	var my;
+	if ( ev.layerX ||  ev.layerX == 0) { // Firefox
+   			mx= ev.layerX;
+    		my = ev.layerY;
+  		} else if (ev.offsetX || ev.offsetX == 0) { // Opera
+    		mx = ev.offsetX;
+    		my = ev.offsetY;
+  		}
+	var i;
+	for (i=0;i<everything.length;i++){
+		var ch = everything[i];
+		if ((mx>ch.sx)&&(mx<ch.sx+ch.bwidth)&&(my>ch.sy)&&(my<ch.sy+ch.bheight)) {
+			drawall();
+			size = 15;
+			tid = setInterval(flyin,100);
+			result = beats[compch][i];
+			musicch = music[compch][i];
+			newscore = Number(document.f.score.value);
+			newscore +=points[compch][i];
+			
+			break;
+	 	 }
+	 }
+  }
+}
+function flyin() {
+	inmotion = true;
+	ctx.drawImage(compimg, 70,100,size,size);
+	size +=5;
+	if (size>50) {
+		clearInterval(tid);
+		ctx.fillText(result,200,100,250);
+		document.f.score.value = String(newscore);
+	    musicelements[musicch].play();
+	    inmotion = false;
+	}
+	
+}
+
+var rockb = new Throw(rockbx,rockby,8,50,50,"rgb(250,0,0)","rock.jpg");
+var paperb = new Throw(paperbx,paperby,8,50,50,"rgb(0,200,200)","paper.gif");
+var scib = new Throw(scissorsbx,scissorsby,8,50,50,"rgb(0,0,200)","scissors.jpg");
+everything.push(rockb);
+everything.push(paperb);
+everything.push(scib);
+
+
+function init(){
+	document.f.score.value = 0;
+   ctx = document.getElementById('canvas').getContext('2d'); 
+   canvas1 = document.getElementById('canvas');
+   canvas1.addEventListener('click',choose,false);
+  drawall();  
+  ctx.font="bold 16pt Georgia";
+  ctx.fillStyle = "blue";
+  musicelements = document.getElementsByTagName("audio");
+} 
+
+function drawall() {
+	ctx.clearRect(0,0,cwidth,cheight);
+	var i;
+	for (i=0;i<everything.length;i++) {
+		  everything[i].draw();
+			}
+}
+
+
+</script>
+</head>
+<body onLoad="init();">  
+<canvas id="canvas" width="600" height="400">
+Your browser doesn't support the HTML5 element canvas.
+</canvas>  
+<br/>
+<form name="f">
+Score: <input name="score" value="0" size="3"/>
+</form>
+<audio autobuffer>
+<source src="hithard.ogg" />
+<source src="hithard.mp3" />
+</audio>
+<audio autobuffer>
+<source src="inhale.ogg" />
+<source src="inhale.mp3" />
+</audio>
+<audio autobuffer>
+<source src="sword.ogg" />
+<source src="sword.mp3" />
+</audio>
+<audio autobuffer>
+<source src="crowdohh.ogg" />
+<source src="crowdohh.mp3" />
+</audio>
+</body>
+</html>

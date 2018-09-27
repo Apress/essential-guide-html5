@@ -1,0 +1,321 @@
+<html>
+<head>
+    <title>Black Jack</title>
+    <style>
+        body {
+            background-color:white;
+            color: black;
+            font-size:24px;
+            font-family:Verdana, Geneva, sans-serif;
+        }
+        footer {
+            display:block;
+            font-family:Tahoma, Geneva, sans-serif;
+            text-align: center;
+            font-style:oblique;
+        }
+        header {
+            width:100%;
+            display:block;
+        }
+    </style>
+    <script>
+        var cwidth = 800;
+        var cheight = 500;
+        var cardw = 100;   //was 75  by 107
+        var cardh = 140;
+        var playerxp = 100;
+        var playeryp = 300;
+        var housexp = 500;
+        var houseyp = 100;
+        var housetotal;
+        var playertotal;
+        var pi = 0;
+        var hi = 0;
+        var deck = [];
+        var playerhand = [];
+        var househand = [];
+        var back = new Image();
+        var ctx;
+
+        /*Takashi:
+         gamestart is a flag to check if the game has started or not.
+         This can also be used to check if the game is ongoing or not.
+         */
+        var gamestart = false;
+
+        function init() {
+            ctx = document.getElementById('canvas').getContext('2d');
+            ctx.font="italic 20pt Georgia";
+            ctx.fillStyle = "blue";
+            builddeck();
+            back.src ="cardback.png";
+            canvas1 = document.getElementById('canvas');
+            window.addEventListener('keydown',getkey,false);
+            shuffle();
+            dealstart();
+        }
+        function getkey(event) {
+            var keyCode;
+            if(event == null)
+            {
+                keyCode = window.event.keyCode;
+                window.event.preventDefault();
+            }
+            else   {
+                keyCode = event.keyCode;
+                event.preventDefault();
+            }
+            switch(keyCode)  {
+                case 68:
+                    deal();
+                    break;
+                case 72:
+                    playerdone();
+                    break;
+                case 78:
+                    newgame();
+                    break;
+                default:
+                    alert("Press d, h, or n.");
+            }
+        }
+        function dealstart() {
+            playerhand[pi] = dealfromdeck(1);
+            ctx.drawImage(playerhand[pi].picture,playerxp,playeryp,cardw,cardh);
+            playerxp = playerxp+30;
+            pi++;
+            househand[hi] = dealfromdeck(2);
+            ctx.drawImage(back,housexp,houseyp,cardw,cardh);
+            housexp = housexp+20;
+            hi++;
+            playerhand[pi] = dealfromdeck(1);
+            ctx.drawImage(playerhand[pi].picture,playerxp,playeryp,cardw,cardh);
+            playerxp = playerxp+30;
+            pi++;
+            househand[hi] = dealfromdeck(2);
+            ctx.drawImage(househand[hi].picture,housexp,houseyp,cardw,cardh);
+            housexp = housexp+20;
+            hi++;
+        }
+        function deal() {
+            /*
+            Takashi:
+            If gamestart is true meaning a new game has started, deal can be processed.
+            Otherwise, the alert message appears.
+             */
+            if(gamestart) {
+
+                playerhand[pi] = dealfromdeck(1);
+                ctx.drawImage(playerhand[pi].picture, playerxp, playeryp, cardw, cardh);
+                playerxp = playerxp + 30;
+                pi++;
+                if (more_to_house()) {
+                    househand[hi] = dealfromdeck(2);
+                    ctx.drawImage(househand[hi].picture, housexp, houseyp, cardw, cardh);
+                    housexp = housexp + 20;
+                    hi++;
+                }
+
+            }else{
+                alert("Press n to start a new game with the same deck.\n Reload page to start a game with a new deck.");
+            }
+        }
+        function more_to_house(){
+            var ac = 0;
+            var i;
+            var sumup = 0;
+            for (i=0;i<hi;i++) {
+                sumup += househand[i].value;
+                if (househand[i].value==1) {ac++;}
+            }
+            if (ac>0) {
+                if ((sumup+10)<=21) {
+                    sumup +=10;
+                }
+            }
+            housetotal = sumup;
+            if (sumup<17) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        function dealfromdeck(who) {
+            var card;
+            var ch = 0;
+            while ((deck[ch].dealt>0)&&(ch<51)) {
+                ch++;
+            }
+            if (ch>=51) {
+                ctx.fillText("NO MORE CARDS IN DECK. Reload. ",200,250);
+                ch = 51;
+
+                /*
+                Takashi:
+                No more cards in deck means that a player cannot continue the game.
+                Therefore, gamestart should be set to false.
+                */
+                gamestart=false;
+            }
+            deck[ch].dealt = who;
+            card = deck[ch];
+            return card;
+        }
+        function builddeck() {
+            var n;
+            var si;
+            //var suitnames= ["clubs","hearts","spades","diamonds"];
+            var suitnames =["C","H","S","D"];
+            var i;
+            i=0;
+            var picname;
+            var nums=["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+            for (si=0;si<4;si++) {
+                for (n=0;n<13;n++) {
+                    picname=nums[n]+suitnames[si]+".png";
+                    deck[i]=new MCard(n+1,suitnames[si],picname);
+                    i++;
+                }
+            }
+            
+        }
+        function MCard(n, s, picname){
+            this.num = n;
+            if (n>10) n = 10;
+            this.value = n;
+            this.suit = s;
+            this.picture = new Image();
+            this.picture.src = picname;
+            this.dealt = 0;
+
+        }
+        function add_up_player() {
+            var ac = 0;
+            var i;
+            var sumup = 0;
+            for (i=0;i<pi;i++) {
+                sumup += playerhand[i].value;
+                if (playerhand[i].value==1)
+                {ac++;
+                }
+            }
+            if (ac>0) {
+                if ((sumup+10)<=21) {
+                    sumup +=10;
+                }
+            }
+            return  sumup;
+        }
+        function playerdone() {
+            /*
+             Takashi:
+             If gamestart is true meaning a new game has started, hold can be processed.
+             Otherwise, the alert message appears.
+             */
+            if(gamestart) {
+
+                while (more_to_house()) {
+                    househand[hi] = dealfromdeck(2);
+                    ctx.drawImage(back, housexp, houseyp, cardw, cardh);
+                    housexp = housexp + 20;
+                    hi++;
+                }
+                showhouse();
+                playertotal = add_up_player();
+                if (playertotal > 21) {
+                    if (housetotal > 21) {
+                        ctx.fillText("You and house both went over.", 30, 100);
+                    }
+                    else {
+                        ctx.fillText("You went over and lost.", 30, 100);
+                    }
+                }
+                else if (housetotal > 21) {
+                    ctx.fillText("You won. House went over.", 30, 100);
+                }
+                else if (playertotal >= housetotal) {
+                    if (playertotal > housetotal) {
+                        ctx.fillText("You won. ", 30, 100);
+                    }
+                    else {
+                        ctx.fillText("TIE!", 30, 100);
+                    }
+                }
+                else if (housetotal <= 21) {
+                    ctx.fillText("You lost. ", 30, 100);
+                }
+                else {
+                    ctx.fillText("You won because house went over.");
+                }
+
+                /*
+                From Takashi:
+                When a player presses a "h" key, the game is over. This means gamestart should be set to false.
+                 */
+                gamestart=false;
+            }else{
+                alert("Press n to start a new game with the same deck.\n Reload for a new deck and then press n to start a game.");
+            }
+        }
+        function newgame() {
+            /*
+            Takashi:
+            If gamestart is false meaning a new game has not started yet, player can start a game.
+            */
+            if(!gamestart) {
+
+                /*
+                Takashi:
+                Because a new game has started, gamestart should be set to true.
+                 */
+                gamestart=true;
+
+                ctx.clearRect(0, 0, cwidth, cheight);
+                pi = 0;
+                hi = 0;
+                playerxp = 100;
+                housexp = 500;
+                dealstart();
+
+            }
+        }
+        function showhouse() {
+            var i;
+            housexp= 500;
+            for (i=0;i<hi;i++) {
+                ctx.drawImage(househand[i].picture, housexp,houseyp,cardw,cardh);
+                housexp = housexp+20;
+            }
+        }
+        function shuffle() {
+            var i = deck.length - 1;
+            var s;
+            while (i>0) {
+                s = Math.floor(Math.random()*(i+1));
+                swapindeck(s,i);
+                i--;
+            }
+        }
+        function swapindeck(j,k) {
+            var hold = new MCard(deck[j].num,deck[j].suit,deck[j].picture.src);
+            deck[j] = deck[k];
+            deck[k] = hold;
+        }
+    </script>
+</head>
+<body onLoad="init();">
+<header>
+    Press <b>n</b> for a new game (same deck), <b>d</b> for deal 1 more card, <b>h</b> for hold. Reload for a new deck and then press n for a new game.<br>
+</header>
+<canvas id="canvas" width="800" height="500">
+    Your browser doesn't support the HTML5 element canvas.
+</canvas>
+<footer>Card images obtained courtesy of the American Contract Bridge League, 
+   <a href="http://acbl.mybigcommerce.com/52-playing-cards/">52 playing cards</a>,
+    <br/>
+    Shuffle explained at <a href="http://eli.thegreenplace.net/2010/05/28/the-intuition-behind-fisher-yates-shuffling">The intuition behind Fisher-Yates shuffling</a>
+</footer>
+</body>
+</html>

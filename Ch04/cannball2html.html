@@ -1,0 +1,187 @@
+<html>
+<head>
+    <title>Cannonball</title>
+    <style>
+	form {
+	width:330px;
+	margin:20px;
+	background-color:brown;
+	padding:20px;
+}
+	</style>
+    <script type="text/javascript">
+	var cwidth = 600;
+	var cheight = 400;
+	var ctx;
+	var everything = [];
+	var tid;
+	var outofcannon;
+	var horvelocity;
+	var verticalvel1;
+	var verticalvel2;
+	var gravity = 2;  //arbitrary. Makes for nice arc.
+	var cannonx = 10;
+	var cannony = 280;
+	var cannonlength = 200;
+	var cannonht = 20;
+	var ballrad = 10;
+	var targetx = 500;
+	var targety = 50;
+	var targetw = 85;
+	var targeth = 280;
+	var htargetx = 450;
+	var htargety = 220;
+	var htargetw = 355;
+	var htargeth = 96;
+//define Ball, Picture, Myrectangles, to be objects on canvas. Each has a draw method.
+//Each object painted on the canvas corresponds to an element in everything array.
+//each element is an array, with some of the values used to perform a rotation.
+	
+function Ball(sx,sy,rad,stylestring) {
+  this.sx = sx;
+  this.sy = sy;
+  this.rad = rad;
+  this.draw = drawball;
+  this.moveit = moveball;
+  this.fillstyle = stylestring;
+}
+
+function drawball() {
+	ctx.fillStyle=this.fillstyle;
+	ctx.beginPath();
+	//ctx.fillStyle= rgb(0,0,0);
+	ctx.arc(this.sx,this.sy,this.rad,0,Math.PI*2,true);
+	ctx.fill();	
+}
+
+function moveball(dx,dy) {
+	this.sx +=dx;
+	this.sy +=dy;
+}
+
+var cball = new Ball(cannonx+cannonlength,cannony+cannonht*.5,ballrad,"rgb(250,0,0)");
+
+
+function Myrectangle(sx,sy,swidth,sheight,stylestring) {
+	this.sx = sx;
+	this.sy = sy;
+	this.swidth = swidth;
+	this.sheight = sheight;
+	this.fillstyle = stylestring;
+	this.draw = drawrects;
+	this.moveit = moveball;
+}
+
+function drawrects() {
+	ctx.fillStyle = this.fillstyle;
+	ctx.fillRect(this.sx,this.sy,this.swidth,this.sheight);	
+}
+
+
+
+function Picture (sx,sy,swidth,sheight,filen) {
+	var imga = new Image();
+	imga.src=filen;
+	this.sx = sx;
+	this.sy = sy;
+	this.img = imga;
+	this.swidth = swidth;
+	this.sheight = sheight;
+	this.draw = drawAnImage;
+	this.moveit = moveball;
+}
+function drawAnImage() {
+	ctx.drawImage(this.img,this.sx,this.sy,this.swidth,this.sheight);
+	
+}
+var target = new Picture(targetx,targety,targetw,targeth,"hill.jpg");
+var htarget = new Picture(htargetx, htargety, htargetw, htargeth, "plateau.jpg");
+var ground = new Myrectangle(0,300,600,30,"rgb(10,250,0)");
+var cannon = new Myrectangle(cannonx,cannony,cannonlength,cannonht,"rgb(40,40,0)");
+var targetindex = everything.length;
+everything.push([target,false]);
+everything.push([ground,false]);
+var ballindex = everything.length;
+everything.push([cball,false]);
+var cannonindex = everything.length;  //save to use later
+everything.push([cannon,true,0,cannonx,cannony+cannonht*.5]);  // will set rotation later
+
+function init(){
+   ctx = document.getElementById('canvas').getContext('2d'); 
+  
+  drawall();  
+} 
+function fire() {
+  
+  var angle = Number(document.f.ang.value);
+  var outofcannon = Number(document.f.vo.value);
+  var angleradians = angle*Math.PI/180;
+  horvelocity =  outofcannon*Math.cos(angleradians);
+  verticalvel1 = - outofcannon*Math.sin(angleradians);
+  everything[cannonindex][2]= - angleradians;
+  cball.sx = cannonx + cannonlength*Math.cos(angleradians);
+  cball.sy = cannony+cannonht*.5 - cannonlength*Math.sin(angleradians);
+	drawall();
+	tid = setInterval(change,100);
+	return false;
+}
+
+function drawall() {
+	ctx.clearRect(0,0,cwidth,cheight);
+	var i;
+	for (i=0;i<everything.length;i++) {
+		var ob = everything[i];
+		if (ob[1]) {  //need to translate and rotate
+			ctx.save();
+			ctx.translate(ob[3],ob[4]);
+			ctx.rotate(ob[2]);
+			ctx.translate(-ob[3],-ob[4]);
+			ob[0].draw();
+			ctx.restore(); }
+		else {
+		  ob[0].draw();
+		}
+	}
+}
+
+function change() {
+	var dx = horvelocity;
+	verticalvel2 = verticalvel1 + gravity;
+	var dy = (verticalvel1 + verticalvel2)*.5;
+	verticalvel1 = verticalvel2;
+	cball.moveit(dx,dy);
+	//check for hitting target
+	var bx = cball.sx;
+	var by = cball.sy;
+	if ((bx>=target.sx)&&(bx<=(target.sx+target.swidth))&&
+	(by>=target.sy)&&(by<=(target.sy+target.sheight))) {
+		clearInterval(tid);
+		//remove target and insert htarget
+		everything.splice(targetindex,1,[htarget,false]);
+		everything.splice(ballindex,1);
+		drawall();
+		
+	}
+	//check for getting beyond ground level
+	if (by>=ground.sy) {
+		clearInterval(tid);
+	}
+	drawall();	
+}
+
+</script>
+</head>
+<body onLoad="init();">  
+<canvas id="canvas" width="600" height="400">
+Your browser doesn't support the HTML5 element canvas.
+</canvas>  
+<br/>
+<form name="f" id="f" onSubmit="return fire();">
+Set velocity, angle and fire cannonball. <br/> 
+Velocity out of cannon <input name="vo" id="vo" value="10" type="number" min="-100" max="100" /> 
+<br>
+Angle <input name="ang" id="ang" value="0" type="number" min="0" max="80"/>
+<input type="submit" value="FIRE"/>
+</form> 
+</body>
+</html>

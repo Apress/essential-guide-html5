@@ -1,0 +1,30 @@
+<html>
+<head>
+    <title>Triangle</title>
+    <script type="text/javascript">
+        var ctx;
+        var rad = 50;
+        var centerX = 200;
+        var centerY = 200;
+        var n = 3;
+        var angle = (2*Math.PI)/n;
+        function init(){
+            ctx = document.getElementById('canvas').getContext('2d');
+            ctx.fillStyle="rgb(255,0,0)";
+            var i;
+            ctx.beginPath();
+            ctx.moveTo(centerX+rad*Math.cos(-.5*angle),centerY+rad*Math.sin(-.5*angle));
+            for (i=1;i<n;i++) {
+                ctx.lineTo(centerX+rad*Math.cos((i-.5)*angle),centerY+rad*Math.sin((i-.5)*angle));
+            }
+            ctx.closePath();
+            ctx.fill();
+        }
+    </script>
+</head>
+<body onLoad="init();">
+<canvas id="canvas" width="400" height="400">
+    Your browser doesn't support the HTML5 element canvas.
+</canvas>
+</body>
+</html>

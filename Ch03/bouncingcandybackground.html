@@ -1,0 +1,139 @@
+<html>
+<head>
+	<meta charset="UTF-8"> 
+    <title>Bouncing cotton candy!</title>
+    <style>
+	form {
+	width:330px;
+	margin:20px;
+	background-color:#b10515;
+	padding:20px;
+}
+img {visibility: hidden;}
+	</style>
+    <script type="text/javascript">
+	var cwidth = 400;
+	var cheight = 300;
+	var ballrad = 10;
+	var boxx = 0;
+	var boxy = 0;
+	var boxwidth = 400;
+	var boxheight = 300;
+	var boxboundx = boxwidth;
+	var boxboundy = boxheight;
+	var inboxboundx = boxx+ballrad;
+	var inboxboundy = boxy+ballrad;
+	var ballx = 50;
+	var bally = 60;
+	
+	var ballvx = 4;
+	var ballvy = 8;
+	var ball = new Image();
+	
+   
+   
+	var ctx;
+	var grad;
+	var color;
+	var tid;
+
+	var bkg = new Image();
+	var stoppedx = ballvx;  //will be changed by stopcc. 
+	var stoppedy = ballvy;
+	
+	
+	
+function init(){  
+  var h;
+  ctx = document.getElementById('canvas').getContext('2d'); 
+  bkg.src = "reunion.jpg";
+  ball.src = "candy.png";
+  ctx.fillStyle = grad;
+  ctx.lineWidth = ballrad;
+  moveball();  
+  tid = setInterval(moveball,100);  
+}  
+function moveball(){  
+ 
+  ctx.clearRect(boxx,boxy,boxwidth,boxheight);
+ 
+  moveandcheck();
+  ctx.drawImage(bkg,0,0,4000,3000,0,0,400,300);
+ 
+  ctx.drawImage(ball,0,0,388,435,ballx-ballrad,bally-ballrad,388/10,435/10);
+   ctx.strokeRect(0,0,400,300);
+   
+} 
+function moveandcheck() {
+	var nballx = ballx + ballvx;
+	var nbally = bally +ballvy;
+ 
+  if (nballx > boxboundx) {
+	 ballvx =-ballvx;
+	 nballx = boxboundx;
+  }
+  if (nballx < inboxboundx) {
+     nballx = inboxboundx;
+	 ballvx = -ballvx;
+  }
+  if (nbally > boxboundy) {
+	 nbally = boxboundy;
+	 ballvy =-ballvy;
+  }
+  if (nbally < inboxboundy) {
+    nbally = inboxboundy;
+	 ballvy = -ballvy;
+  }
+  ballx = nballx;
+  bally = nbally;
+}
+function change() {
+	//I am converting to number. 
+	//I don't think max or min works.
+	ballvx = Number(document.f.hv.value);
+	ballvy = Number(document.f.vv.value);
+	stoppedx = ballvx;
+	stoppedy = ballvy;
+	return false;
+}
+function stopcc() {
+  clearInterval(tid);
+  stoppedx = ballvx;
+  stoppedy = ballvy;
+  moveball();  //need to display scene
+   
+  return false;
+
+}
+function resume(){
+	clearInterval(tid);
+	 
+	ballvx = stoppedx;
+	ballvy = stoppedy;
+	moveball();
+	tid = setInterval(moveball,100);
+	return false;
+}
+</script>
+</head>
+<body onLoad="init();"> 
+Click STOP to stop the cotton candy moving to get it near Panda Annika. 
+<br/>
+You can click RESUME to have the candy start moving again. <br/>
+You can change the velocities. <br/>
+<canvas id="canvas" width="400" height="300">
+This browser doesn't support the HTML5 canvas element.
+</canvas>  
+<br/>
+<form name="f" id="f" onSubmit="return change();">
+  Horizontal velocity <input name="hv" id="hv" value="4" type="number" min="-10" max="10" /> 
+<br>
+  Vertical velocity <input name="vv" id="vv" value="8" type="number" min="-10" max="10"/>
+<input type="submit" value="CHANGE"/> <button onClick="return stopcc();">STOP </button>  &nbsp; &nbsp;
+<button onClick="return resume();">RESUME </button>
+</form> 
+
+<img src="candy.png" />
+<img src="reunion.jpg" />
+</body>
+</html>

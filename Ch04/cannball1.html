@@ -1,0 +1,138 @@
+<html>
+<head>
+    <title>Cannonball</title>
+    <style>
+	form {
+	width:330px;
+	margin:20px;
+	background-color:brown;
+	padding:20px;
+}
+	</style>
+    <script type="text/javascript">
+	var cwidth = 600;
+	var cheight = 400;
+	var ctx;
+	var everything = [];
+	var tid;
+	var horvelocity;
+	var verticalvel1;
+	var verticalvel2;
+	var gravity = 2;  //arbitrary. Makes for a nice arc.
+	var iballx = 20;
+	var ibally = 300;
+//define Ball, Picture, myrectangles, to be objects on canvas. Each has a draw method.
+//Each object painted on the canvas corresponds to an element in everything array.	
+	
+function Ball(sx,sy,rad,stylestring) {
+  this.sx = sx;
+  this.sy = sy;
+  this.rad = rad;
+  this.draw = drawball;
+  this.moveit = moveball;
+  this.fillstyle = stylestring;
+}
+
+function drawball() {
+	ctx.fillStyle=this.fillstyle;
+	ctx.beginPath();
+	//ctx.fillStyle= rgb(0,0,0);
+	ctx.arc(this.sx,this.sy,this.rad,0,Math.PI*2,true);
+	ctx.fill();	
+}
+
+function moveball(dx,dy) {
+	this.sx +=dx;
+	this.sy +=dy;
+}
+
+var cball = new Ball(iballx,ibally,10,"rgb(250,0,0)");
+
+
+function Myrectangle(sx,sy,swidth,sheight,stylestring) {
+	this.sx = sx;
+	this.sy = sy;
+	this.swidth = swidth;
+	this.sheight = sheight;
+	this.fillstyle = stylestring;
+	this.draw = drawrects;
+	this.moveit = moverect;
+}
+
+function drawrects() {
+	ctx.fillStyle = this.fillstyle;
+	ctx.fillRect(this.sx,this.sy,this.swidth,this.sheight);	
+}
+
+function moverect(dx,dy) {
+   this.sx += dx;
+   this.sy += dy;
+}
+
+var target = new Myrectangle(300,100,80,200,"rgb(0,5,90)");
+var ground = new Myrectangle(0,300,600,30,"rgb(10,250,0)");
+everything.push(target);
+everything.push(ground);
+everything.push(cball);
+
+function init(){
+   ctx = document.getElementById('canvas').getContext('2d'); 
+  
+  drawall();  
+} 
+function fire() {
+  cball.sx = iballx;
+  cball.sy = ibally;
+  horvelocity =  Number(document.f.hv.value);
+  verticalvel1 = Number(document.f.vv.value);
+ 
+	drawall();
+	tid = setInterval(change,100);
+	return false;
+}
+
+function drawall() {
+	 
+	ctx.clearRect(0,0,cwidth,cheight);
+	var i;
+	for (i=0;i<everything.length;i++) {
+		everything[i].draw();
+	}
+	
+}
+function change() {
+	var dx = horvelocity;
+	verticalvel2 = verticalvel1 + gravity;
+	var dy = (verticalvel1 + verticalvel2)*.5;
+	verticalvel1 = verticalvel2;
+	cball.moveit(dx,dy);
+	//check for hitting target
+	var bx = cball.sx;
+	var by = cball.sy;
+	if ((bx>=target.sx)&&(bx<=(target.sx+target.swidth))&&
+	(by>=target.sy)&&(by<=(target.sy+target.sheight))) {
+		clearInterval(tid);
+	}
+	//check for getting beyond ground level
+	if (by>=ground.sy) {
+		clearInterval(tid);
+	}
+	drawall();	
+}
+
+</script>
+</head>
+<body onLoad="init();">  
+<canvas id="canvas" width="600" height="400">
+Your browser doesn't support the HTML5 element canvas.
+</canvas>  
+<br/>
+<form name="f" id="f" onSubmit="return fire();">
+Set velocities and fire cannonball. <br/> 
+Horizontal displacement <input name="hv" id="hv" value="10" type="number" min="-100" max="100" /> 
+<br>
+Initial vertical displacement <input name="vv" id="vv" value="-25" type="number" min="-100" max="100"/>
+<input type="submit" value="FIRE"/>
+</form> 
+</body>
+</html>

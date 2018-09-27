@@ -1,0 +1,213 @@
+<html>
+ <meta charset="UTF-8">
+<head>
+    <title>Ordering Quiz with Rewards</title>
+<style>
+.thing {position:absolute;left: 0px; top: 0px; border: 2px; border-style: double; background-color: white; margin: 5px; padding: 5px; }
+
+audio {visibility: hidden;}
+video {visibility: hidden; display: none; position:absolute;}
+
+</style>
+    <script type="text/javascript">
+	var facts = [
+	  ["George Washington",false],
+	  ["John Adams",false],
+	  ["Thomas Jefferson",false],
+	  ["James Madison",false],
+	  ["James Monroe",false],
+	  ["John Quincy Adams",false],
+	  ["Andrew Jackson",false],
+	  ["Martin Van Buren",false],
+	  ["William Harrison",false],
+	  ["John Tyler",false],
+	  ["James Polk", false],
+	  ["Zachary Taylor",false],
+	  ["Millard Fillmore",false],
+	  ["Franklin Pierce",false],
+	  ["James Buchanan",false],
+	  ["Abraham Lincoln",false],
+	  ["Andrew Johnson",false],
+	  ["Ulysses Grant",false],
+	  ["Rutherford Hayes",false],
+	  ["James Garfield",false],
+	  ["Chester Arthur",false],
+	  ["Grover Cleveland (1)",false],
+	  ["Benjamin Harrison",false],
+	  ["Grover Cleveland (2)",false],
+	  ["William McKinley",false],
+	   ["Theodore Roosevelt",false],
+	  ["William Taft",false],
+	  ["Woodrow Wilson",false],
+	  ["Warren Harding",false],
+	   ["Calvin Coolidge",false],
+	  ["Herbert Hoover",false],
+	  ["Franklin Roosevelt",false],
+	  ["Harry Truman",false],
+	   ["Dwight Eisenhower",false],
+	  ["John Kennedy",false],
+	  ["Lyndon Johnson",false],
+	  ["Richard Nixon",false],
+	   ["Gerald Ford",false],
+	  ["Jimmy Carter",false],
+	   ["Ronald Reagan",false],
+	  ["George H. W. Bush",false],
+	   ["Bill Clinton",false],
+	  ["George W. Bush",false],
+	    ["Barack Obama",false],
+	      ["Donald Trump",false]
+	       
+	  ];
+
+	var thingelem;
+	var nq = 4;  //number of facts presented
+	
+	
+	var col1 = 20;
+	var row1 = 100;
+	var rowsize = 50;
+	var slots = []; //added to by each call of pickelement. Populated also all together in checkedUsingAnswer
+
+	var answertext=" ";
+	//var displayed = []; //added to in setupgame
+	var song;
+    var functionreference;
+    var v;
+    var res;
+    var ans;
+	
+
+function init(){
+
+  res = document.getElementById("results");
+  ans = document.getElementById("answer");
+  
+  functionreference = pickelement;
+   song = document.getElementById("ruffles");
+   v = document.getElementById("vid");
+   
+  
+   row1= .5* window.innerHeight;
+
+   setupgame();  
+} 
+
+function setupgame() {
+	slots=[];
+    //displayed=[];
+    answertext="";
+	var i;
+	var c;
+	//var s;
+	var mx = col1;
+	var my = row1;
+	var d;
+	var uniqueid;
+	// mark all facts as not being used.
+	for (i=0;i<facts.length;i++) {
+		facts[i][2] = false;	
+	}
+	
+	for(i=0;i<nq;i++) {
+		do {c = Math.floor(Math.random()*facts.length);}
+		while (facts[c][1]==true)  //get an unused fact
+		facts[c][1]=true;  
+		uniqueid = "p"+String(c);
+		d = document.createElement('pres');
+    	d.innerHTML = 
+	      "<div  class='thing' id='"+uniqueid+"'>placeholder</div>";
+	 
+		document.body.appendChild(d);	  
+		thingelem = document.getElementById(uniqueid);
+		thingelem.textContent=String(i+1)+": "+facts[c][0];
+		thingelem.style.top = String(my)+"px";
+		thingelem.style.left = String(mx)+"px";
+		thingelem.addEventListener('click',pickelement);
+
+
+		
+		my +=rowsize;
+	}
+	
+}
+
+ function pickelement(ev) {
+
+	 
+	 var answert; //the number 1, 2, etc.
+	 var positiont; //position in original array as text
+	 var positionn;  //position as number
+	 positiont = this.id.substring(1); //remove the first letter of id, 
+	 answert= this.textContent.substring(0,1);  //works if less than 10 choices
+	 answertext = answertext+answert+" ";
+	 ans.innerHTML= answertext;
+	 positionn = Number(positiont);
+     this.style.backgroundColor = "gold";
+     this.removeEventListener('click',functionreference);
+     slots.push(positionn);
+     if (slots.length==nq) {
+     	 checkorder();
+     }
+	 
+ }
+
+function checkorder(){
+	var ok = true;
+    for (var i=0;i<nq-1;i++){
+       if (slots[i]>slots[i+1]){
+       	 ok = false;
+       	 break;
+       }
+    }
+    if (ok){
+       res.innerHTML= "CORRECT";
+       song.style.visibility="visible";
+       song.currentTime = 4; //prevent seconds of no sound
+       song.play();
+       v.style.visibility="visible";
+       v.currentTime=0;
+       v.style.display="block";
+         
+       v.play();
+    }
+    else {
+       res.innerHTML = "WRONG";
+    }
+
+}
+
+
+</script>
+</head>
+<body onload="init();">  
+<audio id="ruffles" controls="controls"  preload="auto" alt="Hail to the Chief"> 
+  <source src="hail_to_the_chief.mp3" type="audio/mpeg">
+  <source src="hail_to_the_chief.ogg" type="audio/ogg">
+Your browser does not accept the audio tag.
+ </audio>
+ <video id="vid"  preload="auto" width="50%" alt="Fireworks video" muted> 
+<source src="sfire3.webmvp8.webm" type='video/webm; codec="vp8, vorbis"'> 
+<source src="sfire3.mp4"> 
+<source src="sfire3.theora.ogv" type='video/ogg; codecs="theora, vorbis"'> 
+
+Your browser does not accept the video tag.
+ </video>
+
+<h1>Order the Presidents</h1>
+
+This is a challenge to put the presidents displayed in the right order in terms of time of term in office. Click on the boxes in the order you believe correct.
+<br/>
+Reload for new game.
+<br/>
+
+
+Your order: 
+<div id="answer"></div>
+<p>
+Result: <div id="results"></div>
+</p>
+
+
+
+</body>
+</html>
